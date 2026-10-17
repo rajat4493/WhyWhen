@@ -36,4 +36,4 @@ Real Google OAuth consent, token refresh/revocation against Google, real event c
 `npm run verify`; `TEST_DATABASE_URL=postgres://… npm run test:db` (wipes that DB's `public` schema). The app pages render a "Not configured yet" message until env vars are set.
 
 ## Human decisions only if needed
-Final product name; launch provider list; whether direct bypass remains permanent beyond V0; monetization.
+Final product name; launch provider list; whether direct bypass remains permanent beyond V0; monetization; CP-STRAT-1 (strategy, scoreboard, proposed M2.2 — see docs/PRODUCT_STRATEGY.md).

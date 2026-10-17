@@ -32,3 +32,6 @@
 
 ## M2.1 — Real Google booking verification (HUMAN)
 - Next milestone is verification only. No new product features before it passes: no Outlook/Microsoft, Zoho, Gmail, MCP expansion, payments, teams, analytics or AI enhancements.
+
+## Strategy (proposed, not approved)
+- **CP-STRAT-1 — awaiting human approval.** `docs/PRODUCT_STRATEGY.md`: compete on segment-specific axes (intent-first, honest reliability, page speed, calm looks, free core for solos) instead of feature parity with Calendly/Cal.com. Published scoreboard with evidence states. Proposed new milestone **M2.2** (after M2.1): conflict check across all host calendars, auto Google Meet link, public page < 100 KB. No scope or code change until approved; M2.1 remains the gate.
