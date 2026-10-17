@@ -1,3 +1,0 @@
-import {NextResponse} from "next/server";import {z} from "zod";
-const bookingRequest=z.object({hostId:z.string().min(1),visitorName:z.string().min(1).max(120),visitorEmail:z.string().email(),start:z.string().datetime(),end:z.string().datetime(),timezone:z.string().min(1),idempotencyKey:z.string().min(12)});
-export async function POST(request:Request){const parsed=bookingRequest.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"Invalid booking",details:parsed.error.flatten()},{status:400});return NextResponse.json({status:"IMPLEMENTED_NOT_VERIFIED",message:"Booking request validated; provider write is not wired in the starter scaffold."},{status:501})}

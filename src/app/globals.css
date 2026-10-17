@@ -23,3 +23,19 @@ h1{margin:0;max-width:680px;font-size:clamp(42px,8vw,72px);line-height:.98;lette
 .panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:20px}.field{width:100%;min-height:44px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--surface)}
 .row{display:flex;gap:12px;align-items:center;justify-content:space-between}.stack{display:grid;gap:14px}.pill{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
 @media(max-width:680px){.shell{padding-top:34px}.brand{margin-bottom:58px}.grid,.slot-grid{grid-template-columns:1fr}.actions{align-items:stretch}.actions .button{width:100%}}
+/* M2: booking flow + host setup */
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.date-row{display:flex;flex-wrap:wrap;gap:8px}
+.date-chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;min-height:44px;padding:0 14px;color:var(--ink)}
+.date-chip[aria-pressed="true"],.slot[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+.slot:disabled,.button:disabled{opacity:.5;cursor:not-allowed}
+.notice{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--surface);color:var(--ink);font-size:15px;line-height:1.5}
+.notice.warn{border-color:#d9c48a;background:#fffbea}.notice.error{border-color:#e3b4ae;background:#fff6f5}
+.label{display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.summary{font-size:18px;line-height:1.5}.summary strong{display:block;font-size:22px;letter-spacing:-.02em;color:var(--ink)}
+.week{display:grid;gap:8px}.week-row{display:grid;grid-template-columns:92px minmax(0,1fr) minmax(0,1fr);gap:8px;align-items:center}.week-row .field{min-width:0}
+.week-row label{display:flex;gap:8px;align-items:center;color:var(--ink)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.list li{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px}
+.inline{display:inline}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;word-break:break-all}
+@media(max-width:680px){.two{grid-template-columns:1fr}.week-row{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr)}}

@@ -5,12 +5,12 @@
 Outcome: locked V0 behavior, system design, design language, scope, test plan.
 
 ## M1 — Runnable local shell
-**Status:** IMPLEMENTED NOT VERIFIED  
+**Status:** VERIFIED (clean `npm ci && npm run verify`, pinned toolchain)  
 Outcome: minimalist public page, direct booking page, dashboard shell, mock intent endpoint, pure slot engine.  
 Exit: install succeeds; typecheck/tests/build observed passing.
 
 ## M2 — Google Calendar real booking
-**Status:** NOT STARTED  
+**Status:** IMPLEMENTED NOT VERIFIED. Code complete, unit-tested with fakes, race/constraint tests VERIFIED on local Postgres 16. Exit (real Google test account E2E) pending the human UAT in `docs/M2_SETUP_AND_UAT.md`.  
 Outcome: OAuth + live free/busy + hold + re-check + event creation + cancellation/reschedule + idempotency.  
 Exit: real Google test account E2E observed.
 

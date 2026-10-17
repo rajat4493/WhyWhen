@@ -1,2 +1,2 @@
 # Current Outcome
-A Claude Code-ready starter repository defines V0 and includes a Next.js shell plus scheduling/integration scaffolding. It is not yet proven runnable and does not yet create real bookings. Next proof: M1 verification, then Google Calendar E2E booking in M2.
+M1 is VERIFIED: a clean, pinned install typechecks, tests and builds. M2 (Google Calendar real booking) is IMPLEMENTED NOT VERIFIED. The full connect → availability → hold → re-check → book → reschedule → cancel loop exists, with race protection and honest partial-failure handling. It is proven with fakes, a real local Postgres, and browser/HTTP smoke tests, but not yet against live Google or Supabase. Next proof: the human UAT in `docs/M2_SETUP_AND_UAT.md`.

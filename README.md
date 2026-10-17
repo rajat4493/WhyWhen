@@ -17,16 +17,22 @@ One public link where a visitor can either **book time directly** or explain wha
 - MCP is an interoperability surface, not the source of truth.
 
 ## Stack
-Next.js + TypeScript, Supabase Postgres, Vercel, Vercel AI SDK/Gateway, REST calendar adapters, MCP adapter layer, Vitest.
+Next.js + TypeScript, Supabase Postgres (via server-side `pg`), Vercel, Vercel AI SDK/Gateway, REST calendar adapters, MCP adapter layer, Vitest.
 
 ## Start
 ```bash
-npm install
-cp .env.example .env.local
+npm ci
+cp .env.example .env.local   # fill in locally; see docs/M2_SETUP_AND_UAT.md
 npm run dev
+```
+
+## Checks
+```bash
+npm run verify                                  # typecheck + unit tests + production build
+TEST_DATABASE_URL=postgres://… npm run test:db  # real-Postgres race/constraint tests (wipes that DB's public schema)
 ```
 
 Read `CLAUDE.md`, `docs/PRODUCT_INTENT_LOCKED_V1.md`, and `duck/MILESTONES.md` before implementation.
 
 ## Verification status
-Starter scaffold, not production ready. See `duck/VERIFICATION_LEDGER.md`.
+M1 VERIFIED. M2 (Google Calendar booking) IMPLEMENTED NOT VERIFIED against live Google/Supabase. Awaiting the manual UAT in `docs/M2_SETUP_AND_UAT.md`. Not production ready. See `duck/VERIFICATION_LEDGER.md`.

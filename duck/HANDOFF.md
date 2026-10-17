@@ -1,39 +1,35 @@
 # Handoff
 
 ## Current milestone
-M1 — Runnable local shell: VERIFIED. Next: M2 (blocked on credentials, see below).
+**M2 — Google Calendar real booking: IMPLEMENTED NOT VERIFIED.** Code complete and locally verified (fakes + real Postgres + live HTTP/browser smoke). Stopped at the M2 evidence gate: a human must run `docs/M2_SETUP_AND_UAT.md` with a real Google test account and Supabase.
+
+M1: VERIFIED.
 
 ## Product truth
-Read `docs/PRODUCT_INTENT_LOCKED_V1.md`.
+Read `docs/PRODUCT_INTENT_LOCKED_V1.md`. Booking transaction: `docs/BOOKING_TRANSACTION.md`.
 
-## What exists
-- Next.js starter UI
-- direct booking surface
-- mock intent API
-- slot calculator + tests
-- calendar adapter contract
-- partial Google/Microsoft/Zoho REST adapters
-- Supabase schema with overlap-preventing holds
-- AI runtime abstraction with mock + OpenAI-compatible adapter
-- detailed milestones
+## What exists (M2)
+- Google OAuth: PKCE + signed state cookie, scope check, offline access, encrypted token storage (AES-256-GCM, AAD = host), refresh with revocation detection, disconnect with revoke at Google. Sign-in = connect (CP-M2-1).
+- Host dashboard: connect/disconnect, calendar choice (owned calendars), timezone, weekly hours, duration, buffers, minimum notice, horizon, upcoming bookings with Cancel/Retry, sign out.
+- Public: `/{slug}` ("What do you need?" / "Book a time directly"), `/{slug}/book` (date → time → name/email → confirm → success), `/manage/{token}` (reschedule/cancel).
+- Booking service (provider-neutral) implementing the 10-step sequence with holds, live re-check, atomic conversion, deterministic Google event IDs, `needs_reconciliation` compensation, cancel, reschedule.
+- Postgres store via `pg` + migration `0002` (single lifecycle table, exclusion constraint, RLS on).
+- Rate limits, input validation, redacted logging, CI with a Postgres service.
 
-## Verified in bootstrap environment
-- dependency-free core/calendar TypeScript subset compiled with global TypeScript 5.8.3
-- three direct slot-engine assertions passed
+## Verified locally (see ledger for exact evidence)
+`npm ci && npm run verify` (95 tests + build) · `npm run test:db` (10 real-Postgres tests incl. 20-way race) · live HTTP smoke · Playwright UI flows at phone width.
 
-## Explicitly not verified yet
-- npm install/full Next.js build/full typecheck/Vitest (sandbox cannot resolve npm registry DNS)
-- OAuth
-- any live calendar API call or real booking
-- AI Gateway adapter
-- Zoho normalization/cancellation
-- MCP implementation
+## Explicitly NOT verified
+Real Google OAuth consent, token refresh/revocation against Google, real event create/reschedule/cancel, Supabase-hosted migrations/pooler/TLS, the `calendar.freebusy` scope assumption, Google accepting UUID-hex event IDs.
 
-## M2 prerequisites needed from human
-Google OAuth client ID/secret + redirect URI, a Supabase project (URL + service key) to apply `supabase/migrations/0001_initial.sql`, and a test Google calendar. Set as env secrets, not in chat.
+## Exact next action
+1. Human: configure env vars (`.env.example`; never in chat), apply migrations `0001` then `0002` on Supabase, create the Google OAuth client.
+2. Human: run UAT steps 1–19 in `docs/M2_SETUP_AND_UAT.md`; record observations in `duck/VERIFICATION_LEDGER.md`.
+3. Agent (next session): fix anything UAT surfaces (expected candidates: scope override, Google event-ID acceptance, TLS/pooler settings). Then mark M2 VERIFIED only for observed items.
+4. Human decision: approve or reject CP-M2-1 (Google = host identity) and CP-M2-2 (auto slug) in `duck/WHAT_CHANGED.md`.
 
-## Exact next action (original)
-On a networked machine run `npm install`, then `npm run verify`. Fix scaffold/runtime issues only. Record evidence in `duck/VERIFICATION_LEDGER.md`. Then start M2 with Google OAuth + complete booking transaction.
+## Local dev without Google
+`npm run verify`; `TEST_DATABASE_URL=postgres://… npm run test:db` (wipes that DB's `public` schema). The app pages render a "Not configured yet" message until env vars are set.
 
 ## Human decisions only if needed
-Final product name; launch provider list; whether direct bypass remains permanent beyond V0; monetization.
+Final product name; launch provider list; whether direct bypass remains permanent beyond V0; monetization; CP-M2-1; CP-M2-2.
