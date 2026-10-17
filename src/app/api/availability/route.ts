@@ -1,0 +1,2 @@
+import {NextResponse} from "next/server";import {calculateSlots} from "@/core/availability/calculate-slots";
+export async function GET(request:Request){const url=new URL(request.url);const from=url.searchParams.get("from")??new Date(Date.now()+60*60_000).toISOString();const to=url.searchParams.get("to")??new Date(Date.now()+9*60*60_000).toISOString();const slots=calculateSlots({start:from,end:to},[],{durationMinutes:30,stepMinutes:30,bufferBeforeMinutes:0,bufferAfterMinutes:0});return NextResponse.json({source:"demo",slots})}

@@ -1,0 +1,11 @@
+# Constraints
+- Prefer boring replaceable infrastructure.
+- V0 = one Next.js deployable + Postgres.
+- No queue required for critical booking path.
+- Live provider free/busy is authoritative.
+- UTC canonical internally; IANA timezone at boundaries.
+- OAuth/API tokens encrypted at rest.
+- Public endpoints need abuse controls before open launch.
+- Never show “booked” before provider confirmation.
+- AI stays outside booking transaction.
+- MCP optional and capability-scoped.
