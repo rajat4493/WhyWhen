@@ -28,7 +28,7 @@ Supabase's anon/service-role keys are **not used**. The app talks to Postgres di
 
 **Supabase**
 1. Create a project. Copy the Transaction pooler connection string into `DATABASE_URL`.
-2. SQL editor → run `supabase/migrations/0001_initial.sql`, then `supabase/migrations/0002_m2_google_booking.sql`. Or use `psql "$DATABASE_URL" -f …` for each file, in order.
+2. SQL editor → run `supabase/migrations/0001_initial.sql`, then `0002_m2_google_booking.sql`, then `0003_host_chosen_slug.sql`. Or use `psql "$DATABASE_URL" -f …` for each file, in order.
 3. Check: Table editor shows `hosts`, `integration_accounts`, `bookings` with RLS enabled (no policies is correct).
 
 **Google Cloud**
@@ -52,7 +52,7 @@ Use a **test** Google account as host. Use a second email address you can read a
 | # | Do | Expect | Record |
 |---|---|---|---|
 | 1 | Open `/dashboard` → **Connect Google Calendar**. | Google consent screen lists calendar list (read), availability, and events on calendars you own. | Screenshot of scopes |
-| 2 | Approve all boxes. | Back on dashboard: "Google Calendar connected", your email, public link `…/<slug>`, timezone = your primary calendar's timezone. | Slug |
+| 2 | Approve all boxes. | Back on dashboard: "Choose your link." with a WhyWhen link suggested from your Google name. Edit it if you like → **Continue**. Then: "Your link is live", public link `…/<slug>`, timezone = your primary calendar's timezone. | Slug |
 | 3 | In Supabase run `select status, encrypted_credentials from integration_accounts;` | `active`, ciphertext starting `v1.`. No readable token. | ✓/✗ |
 | 4 | Dashboard: choose calendar, timezone, weekly hours, 30 min, buffers 0/0, minimum notice 1 hour, horizon 14 days → **Save**. | "Saved." | |
 | 5 | In Google Calendar create a busy event tomorrow 10:00–11:00 (your timezone). | — | |

@@ -2,7 +2,8 @@ import type {CalendarSummary} from "@/core/integrations/calendar/adapter";
 import {getServices} from "@/server/container";
 import {ConfigurationError} from "@/server/env";
 import {sessionHostId} from "@/server/http";
-import {cancelBooking,retryBooking,saveSettings} from "./actions";
+import {SLUG_MAX,normalizeSlugInput,slugProblem} from "@/core/hosts/slug";
+import {cancelBooking,chooseSlug,retryBooking,saveSettings} from "./actions";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
@@ -12,7 +13,7 @@ const MESSAGES:Record<string,string>={
  "error=state":"Sign-in expired or was tampered with. Please try again.","error=denied":"Google access was not granted.","error=scopes":"Calendar permissions are required. Please allow all requested calendar access.",
  "error=offline":"Google did not provide offline access. Remove this app at myaccount.google.com/permissions and connect again.","error=google":"Google sign-in failed. Please try again.",
  "error=settings":"Some settings were invalid. Nothing was saved.","error=calendar":"That calendar can't be used.","error=cancel":"The booking couldn't be cancelled; the calendar may be unreachable.","error=retry":"The calendar still couldn't confirm. Try again shortly.","error=booking":"Unknown booking.",
- "saved=1":"Saved.","connected=1":"Google Calendar connected.","disconnected=1":"Disconnected. Your booking page is paused.","cancelled=1":"Booking cancelled.","retried=1":"Booking confirmed in the calendar.",
+ "saved=1":"Saved.","connected=1":"Google Calendar connected.","disconnected=1":"Disconnected. Your booking page is paused.","cancelled=1":"Booking cancelled.","retried=1":"Booking confirmed in the calendar.","linked=1":"Your link is live. Set your availability below.",
 };
 const STATUS_LABEL:Record<string,string>={confirmed:"Confirmed",needs_reconciliation:"Not confirmed in calendar",pending_event:"Confirming",failed:"Failed — not booked",cancelled:"Cancelled"};
 
@@ -28,7 +29,23 @@ export default async function DashboardPage({searchParams}:{searchParams:Promise
   {notice&&<p className="notice error section">{notice}</p>}
   <p className="section"><a className="button primary" href="/api/oauth/google/start">Connect Google Calendar</a></p></Shell>;
 
- const {host,calendar}=ctx;const publicUrl=`${env.appUrl}/${host.slug}`;
+ const {host,calendar}=ctx;
+ if(!host.slug){
+  // First-time setup: choose the public link. Suggested from the Google display name; chosen once (no V0 editing).
+  const attempted=q.slug?normalizeSlugInput(q.slug):null;
+  const value=attempted??await hosts.suggestSlug(host.displayName,host.email);
+  const error=q.slugError==="taken"?"That link is taken. Please choose another.":q.slugError?slugProblem(attempted??"")??"Please choose another link.":null;
+  const prefix=`${env.appUrl.replace(/^https?:\/\//,"")}/`;
+  return <Shell><p className="eyebrow">Signed in as {host.email}</p><h1>Choose your link.</h1>
+   <form action={chooseSlug} className="section panel stack">
+    <label className="label" htmlFor="slug">WhyWhen link</label>
+    <div className="slug-field"><span className="subtle">{prefix}</span><input id="slug" className="field" name="slug" defaultValue={value} required minLength={3} maxLength={SLUG_MAX} pattern="[a-z0-9]+(-[a-z0-9]+)*" autoCapitalize="none" autoCorrect="off" spellCheck={false} aria-describedby="slug-help"/></div>
+    <p id="slug-help" className="subtle">Lowercase letters, numbers and hyphens. This can&apos;t be changed later.</p>
+    {error&&<p className="notice error" role="alert">{error}</p>}
+    <div><button className="button primary">Continue</button></div>
+   </form></Shell>;
+ }
+ const publicUrl=`${env.appUrl}/${host.slug}`;
  const calendars:CalendarSummary[]|null=calendar?await google.listCalendars(calendar).then(c=>c.filter(x=>x.writable)).catch(()=>null):null;
  const list=await bookings.listForHost(host.id);
  const timezones=Intl.supportedValuesOf("timeZone");

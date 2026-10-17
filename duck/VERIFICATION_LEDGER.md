@@ -3,7 +3,7 @@
 Evidence labels: VERIFIED · IMPLEMENTED NOT VERIFIED · ASSUMPTION · OPEN QUESTION · FAILED.
 "VERIFIED (local)" = observed in the build sandbox, not against live Google or Supabase.
 
-## Current state (2026-10-17, end of M2 implementation)
+## Current state (2026-10-17, M2 approved; M2.1 pending)
 
 | Item | State | Evidence |
 |---|---|---|
@@ -11,8 +11,8 @@ Evidence labels: VERIFIED · IMPLEMENTED NOT VERIFIED · ASSUMPTION · OPEN QUES
 | TheDuck agent contract included | VERIFIED | `CLAUDE.md`, `AGENTS.md`, `/duck` |
 | **M1** install / typecheck / tests / build | VERIFIED | Clean `rm -rf node_modules .next && npm ci && npm run verify` → exit 0 (pinned toolchain) |
 | Dependencies pinned, lockfile-exact installs | VERIFIED | Exact versions in `package.json`, `.npmrc save-exact`, `npm ci` in CI + Dockerfile |
-| Unit/integration tests (fakes) | VERIFIED (local) | Vitest: 9 files, 95 tests passed (+10 DB tests skipped without `TEST_DATABASE_URL`) |
-| Real-Postgres tests | VERIFIED (local) | `npm run test:db` on PostgreSQL 16.15: 10/10 passed; 80 runs, 0 failures after the deadlock fix (migrations, RLS, races, holds, idempotency, reschedule, encryption) |
+| Unit/integration tests (fakes) | VERIFIED (local) | Vitest: 10 files, 98 tests passed (+11 DB tests skipped without `TEST_DATABASE_URL`) |
+| Real-Postgres tests | VERIFIED (local) | `npm run test:db` on PostgreSQL 16.15: 11/11 passed (10 consecutive runs, 0 failures, after the slug change); earlier 80 runs, 0 failures after the deadlock fix (migrations, RLS, races, holds, idempotency, reschedule, encryption) |
 | Production build | VERIFIED (local) | `next build`: 17 routes compiled |
 | Timezone conversion + DST gap/overlap | VERIFIED (local) | `tests/timezone.test.ts`, `tests/policy.test.ts` (Warsaw/Kolkata/New York; 2026-03-29 and 2026-10-25 transitions) |
 | Busy exclusion, buffers, minimum notice, horizon | VERIFIED (local) | `tests/policy.test.ts`, `tests/booking-service.test.ts` |
@@ -38,6 +38,8 @@ Evidence labels: VERIFIED · IMPLEMENTED NOT VERIFIED · ASSUMPTION · OPEN QUES
 | Host dashboard settings save (server action → DB) | VERIFIED (local) | Playwright: duration 45, buffer 10, Saturday off → DB row updated |
 | Google adapter request/response mapping | VERIFIED (local) | Fake-fetch tests (deterministic ID, 409→existing, cancelled→rejected, 401/403/404/429/5xx/network, free/busy normalization, calendar list) |
 | Google free/busy endpoint reachable, 401 mapped | VERIFIED (local, partial) | Live smoke with a fake token: Google returned `401 authError`; app failed closed (503) and kept the hold |
+| Host-chosen slug (CP-M2-2 replacement) | VERIFIED (local) | `tests/slug.test.ts` (suggestion from display name, diacritics, fallbacks; characters/length/reserved). Real Postgres: new host has no slug/public page, suggestion skips taken (`rajat-2`), `taken`/`already_set`, 5 concurrent claims → exactly 1. Playwright 360 px: suggested `rajat-pandey-2` when `rajat-pandey` taken; `dashboard` rejected server-side as reserved; taken rejected with input kept; `rajat` accepted → public `/rajat` 200; no horizontal scroll |
+| **M2.1 primary criterion** (visitor books from real Google availability; real event/invitation) | IMPLEMENTED NOT VERIFIED | Waiting on human-configured Google + Supabase credentials |
 | **Google OAuth with real credentials** | IMPLEMENTED NOT VERIFIED | Needs human UAT (`docs/M2_SETUP_AND_UAT.md` steps 1–3) |
 | **Supabase** (migrations on Supabase, pooler, TLS) | IMPLEMENTED NOT VERIFIED | Migrations verified on vanilla Postgres 16 only |
 | **Real Google event creation / reschedule / cancel** | IMPLEMENTED NOT VERIFIED | UAT steps 7–15 |
@@ -89,3 +91,9 @@ Toolchain: Node 22.22.0, next 16.4.2, typescript 7.0.2, vitest 5.0.5, pg 8.23.1,
   6. Empty `KEY=` env lines (e.g. `GOOGLE_OAUTH_SCOPES=`) would have requested zero scopes / failed TTL parsing → treated as unset.
   7. Invalid `APP_ENCRYPTION_KEY` surfaced as a 500 → now a configuration error (503 "not configured").
   8. **Postgres deadlock (40P01) under concurrent same-slot holds.** Intermittent (2 failures in ~32 runs of the 10-visitor race). Cause: concurrent inserts checked by the exclusion constraint waited on each other's uncommitted rows. FIXED: per-host transaction-scoped advisory lock for slot-claiming writes (`createHold`, `convertHold`, `moveToHold`) + transaction retry on 40P01/40001. After the fix: 40 consecutive `npm run test:db` runs with the lock on `createHold`/`moveToHold`, then 40 more after extending it to `convertHold`/transitions: **80 runs, 0 failures.**
+
+### Slug decision implementation (2026-10-17)
+- CP-M2-1 approved (HUMAN). CP-M2-2 replaced by host-chosen slug (HUMAN); migration `0003` (nullable slug).
+- `npm run verify` → exit 0: 10 test files / 98 passed (+11 DB skipped); typecheck clean; build compiled.
+- `npm run test:db` → 11/11, run 10 times consecutively, 0 failures.
+- Live smoke (`next start`, local Postgres, dummy Google): first-time "Choose your link" flow observed as listed in the table.

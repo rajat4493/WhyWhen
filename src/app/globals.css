@@ -39,3 +39,4 @@ h1{margin:0;max-width:680px;font-size:clamp(42px,8vw,72px);line-height:.98;lette
 .list{display:grid;gap:10px;margin:0;padding:0;list-style:none}.list li{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px}
 .inline{display:inline}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;word-break:break-all}
 @media(max-width:680px){.two{grid-template-columns:1fr}.week-row{grid-template-columns:64px minmax(0,1fr) minmax(0,1fr)}}
+.slug-field{display:flex;align-items:center;gap:6px;min-width:0}.slug-field .field{flex:1;min-width:0}.slug-field .subtle{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%}

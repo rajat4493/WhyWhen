@@ -27,6 +27,7 @@ describe.skipIf(!url)("Postgres store (real database)",()=>{
  beforeEach(async()=>{
   await pool.query("truncate bookings, integration_accounts, hosts cascade");
   hostId=(await hosts.upsertGoogleHost({sub:"google-sub-1",email:"rajat@example.com",name:"Rajat"})).hostId;
+  expect(await hosts.claimSlug(hostId,"rajat")).toBe("ok");
   await hosts.setTimezone(hostId,"UTC");
   await hosts.updateSettings(hostId,UTC_POLICY,null);
   await hosts.saveGoogleConnection(hostId,{externalAccountId:"google-sub-1",email:"rajat@example.com",tokens:{accessToken:"at-secret",refreshToken:"rt-secret",expiresAt:Date.now()+3_600_000,scope:"s"}});
@@ -83,7 +84,7 @@ describe.skipIf(!url)("Postgres store (real database)",()=>{
  it("end-to-end service on Postgres: 10 visitors race for one slot → one booking, one calendar event",async()=>{
   const clock=new FakeClock(MONDAY_8AM);const calendar=new FakeCalendar();
   const service=new BookingService({store,hosts,calendars:()=>calendar,now:clock.now,newId:randomUUID,manageUrl:id=>`https://app.test/manage/${id}`,holdTtlSeconds:600});
-  const slug=(await hosts.getById(hostId))!.host.slug;
+  const slug=(await hosts.getById(hostId))!.host.slug!;
   const attempts=await Promise.all(Array.from({length:10},async(_,i)=>{
    const h=await service.createHold(slug,TEN);if(!h.ok)return h;
    return service.confirm({holdId:h.holdId,...visitor(`race-key-${i}-0000000000`)});
@@ -110,11 +111,19 @@ describe.skipIf(!url)("Postgres store (real database)",()=>{
   expect(after.rows[0]).toEqual({status:"revoked",encrypted_credentials:null});
   expect((await hosts.getById(hostId))?.calendar).toBeNull();
  });
- it("slug allocation avoids collisions and reserved words",async()=>{
-  const a=await hosts.upsertGoogleHost({sub:"s-a",email:"dashboard@example.com",name:null});
-  const b=await hosts.upsertGoogleHost({sub:"s-b",email:"rajat@other.com",name:null});
-  const slugs=(await pool.query<{slug:string}>("select slug from hosts where id = any($1)",[[a.hostId,b.hostId]])).rows.map(r=>r.slug);
-  expect(slugs).not.toContain("dashboard");expect(slugs).not.toContain("rajat");
-  expect((await hosts.upsertGoogleHost({sub:"s-a",email:"dashboard@example.com",name:null}))).toEqual({hostId:a.hostId,created:false});
+ it("new hosts have no public page until they choose a slug; slug is unique and set once",async()=>{
+  const eve=(await hosts.upsertGoogleHost({sub:"s-eve",email:"eve@example.com",name:"Rajat"})).hostId;
+  expect((await hosts.getById(eve))?.host.slug).toBeNull();
+  expect(await hosts.suggestSlug("Rajat","eve@example.com")).toBe("rajat-2");// "rajat" is taken by the beforeEach host
+  expect(await hosts.claimSlug(eve,"rajat")).toBe("taken");
+  expect(await hosts.claimSlug(eve,"rajat-2")).toBe("ok");
+  expect(await hosts.claimSlug(eve,"something-else")).toBe("already_set");
+  expect((await hosts.getBySlug("rajat-2"))?.host.id).toBe(eve);
+  expect(await hosts.upsertGoogleHost({sub:"s-eve",email:"eve@example.com",name:"Rajat"})).toEqual({hostId:eve,created:false});
+ });
+ it("concurrent claims of one slug: exactly one host wins",async()=>{
+  const ids=await Promise.all(Array.from({length:5},(_,i)=>hosts.upsertGoogleHost({sub:`s-${i}`,email:`h${i}@example.com`,name:null}).then(r=>r.hostId)));
+  const results=await Promise.all(ids.map(id=>hosts.claimSlug(id,"popular-name")));
+  expect(results.filter(r=>r==="ok")).toHaveLength(1);expect(results.filter(r=>r==="taken")).toHaveLength(4);
  });
 });

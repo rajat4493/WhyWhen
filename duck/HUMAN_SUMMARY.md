@@ -1,6 +1,6 @@
 # Human Summary
 
-Plain English. What changed, what works, what you need to do. Updated 2026-10-17 (end of M2 build).
+Plain English. What changed, what works, what you need to do. Updated 2026-10-17 (M2 approved; next: M2.1 real Google booking verification).
 
 ## In one paragraph
 The app can now, in code, do the full Google Calendar booking loop. You sign in with Google, pick your calendar and hours, and share a link. A visitor picks a date and time, enters a name and email, and confirms. A real event lands in your Google Calendar with the visitor invited, and the visitor can reschedule or cancel from a link. It has **not been run against your real Google account or Supabase yet**. That's the next step, and only you can do it, because it needs your credentials.
@@ -17,16 +17,19 @@ The app can now, in code, do the full Google Calendar booking loop. You sign in 
 
 ## Decisions I made that you should know about
 - The app talks to the Supabase database directly from the server (a standard Postgres connection) instead of through Supabase's web API. It is more reliable for preventing double bookings, and you don't need any Supabase API keys.
-- Two small product calls need your yes or no (details in `duck/WHAT_CHANGED.md`):
-  1. Hosts sign in with Google (no separate login system) for now.
-  2. Your public link name is generated from your email (e.g. `/rajat`) rather than chosen by you.
+- Your decisions are in:
+  1. **Approved:** connecting Google Calendar is also how hosts sign in. No separate login system.
+  2. **Changed as you asked:** after connecting Google, the first screen is "Choose your link". It shows **WhyWhen link  whywhen.ai/[rajat]** pre-filled from your Google name. You can edit it, and it is checked for allowed characters, reserved words (like `dashboard`) and whether someone else already has it. It is saved once. Changing it later isn't part of V0.
 
 ## Known limits (for now)
 - Moving a meeting to a time that overlaps its current time isn't supported. Pick a non-overlapping time.
 - Abuse limits are per server instance and need upgrading before a public launch.
 - If Google never answers and nobody retries, the booking waits on your dashboard for you to press Retry. There is no automatic background fixer yet.
 
+## What's next: M2.1
+Only one thing: prove a real booking. A visitor opens your public link, sees free times from your real Google Calendar, books one, and a real Google event and invitation appear. No new features until that works.
+
 ## What you need to do
 1. Fill in the settings listed in `docs/M2_SETUP_AND_UAT.md` section 1 (on your machine or Vercel, never in chat).
-2. Run the two database scripts on Supabase.
-3. Follow the 19-step test script in `docs/M2_SETUP_AND_UAT.md` with a test Google account and tell the next session what you saw.
+2. Run the three database scripts on Supabase (`0001`, `0002`, `0003`).
+3. Follow `docs/M2_SETUP_AND_UAT.md` with a test Google account and tell the next session what you saw.

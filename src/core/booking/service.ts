@@ -30,7 +30,7 @@ const MESSAGES={
 export class BookingService{
  constructor(private readonly d:BookingServiceDeps){}
  private log(event:string,fields:Record<string,unknown>){this.d.log?.(event,fields)}
- private view(b:BookingRecord,host:Host):BookingView{return{id:b.id,status:b.status,start:b.start,end:b.end,hostName:host.displayName,hostSlug:host.slug,durationMinutes:Math.round((Date.parse(b.end)-Date.parse(b.start))/60_000),visitorName:b.visitorName,visitorEmail:b.visitorEmail,visitorTimezone:b.visitorTimezone,failureReason:b.failureReason}}
+ private view(b:BookingRecord,host:Host):BookingView{return{id:b.id,status:b.status,start:b.start,end:b.end,hostName:host.displayName,hostSlug:host.slug??"",durationMinutes:Math.round((Date.parse(b.end)-Date.parse(b.start))/60_000),visitorName:b.visitorName,visitorEmail:b.visitorEmail,visitorTimezone:b.visitorTimezone,failureReason:b.failureReason}}
  private slotFor(host:Host,start:string):TimeInterval{const s=Date.parse(start);return{start:new Date(s).toISOString(),end:new Date(s+host.policy.durationMinutes*60_000).toISOString()}}
  private async connected(ctx:HostContext|null):Promise<Failure|{ok:true;host:Host;calendar:CalendarAccount;adapter:CalendarAdapter}>{
   if(!ctx)return fail("host_not_found","This booking page does not exist.");

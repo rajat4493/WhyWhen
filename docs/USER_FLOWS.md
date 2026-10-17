@@ -1,6 +1,6 @@
 # User Flows
 ## Host onboarding
-Sign in → slug → connect calendar → timezone/working hours/buffer/default duration → optional AI → preview → publish.
+Connect Google Calendar (= sign in, CP-M2-1) → choose WhyWhen link (suggested from Google display name, editable once) → calendar/timezone/working hours/buffers/duration/notice/horizon → share link.
 
 ## Visitor intent-first
 Open `/{slug}` → type request → AI classifies → zero-to-two clarifying questions → answer/route or recommend duration + slots. `Book a time` remains visible.

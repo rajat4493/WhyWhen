@@ -3,11 +3,12 @@ import type {Pool} from "pg";
 import type {AvailabilityPolicy,CalendarAccount,Host,HostContext,MeetingDuration,WeeklyRule} from "@/core/domain/types";
 import type {HostDirectory} from "@/core/booking/store";
 import type {CredentialStore,StoredCredential} from "../credentials";
-import {decryptSecret,encryptSecret,randomToken} from "../crypto";
+import {SLUG_MAX,slugFromName} from "@/core/hosts/slug";
+import {decryptSecret,encryptSecret} from "../crypto";
 import type {GoogleIdentity,GoogleTokens} from "../oauth/google";
 import {UNIQUE_VIOLATION,pgCode} from "./postgres";
 
-type HostRow={id:string;slug:string;display_name:string;email:string|null;timezone:string;default_duration_minutes:number;weekly_availability:WeeklyRule[];buffer_before_minutes:number;buffer_after_minutes:number;minimum_notice_minutes:number;horizon_days:number;
+type HostRow={id:string;slug:string|null;display_name:string;email:string|null;timezone:string;default_duration_minutes:number;weekly_availability:WeeklyRule[];buffer_before_minutes:number;buffer_after_minutes:number;minimum_notice_minutes:number;horizon_days:number;
  account_id:string|null;account_status:string|null;external_account_id:string|null;account_email:string|null;calendar_id:string|null};
 const SELECT=`select h.id,h.slug,h.display_name,h.email,h.timezone,h.default_duration_minutes,h.weekly_availability,h.buffer_before_minutes,h.buffer_after_minutes,h.minimum_notice_minutes,h.horizon_days,
  a.id as account_id,a.status as account_status,a.external_account_id,a.email as account_email,a.calendar_id
@@ -20,8 +21,6 @@ function toContext(r:HostRow):HostContext{
  return{host,calendar};
 }
 
-const RESERVED_SLUGS=new Set(["api","dashboard","manage","demo","admin","login","logout","settings","_next"]);
-export function slugBase(email:string){const s=email.split("@")[0].toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,30);return s.length>=3&&!RESERVED_SLUGS.has(s)?s:`host-${s}`.replace(/-+$/,"").padEnd(3,"0")}
 
 export type ConnectionStatus={accountId:string;status:"active"|"revoked";calendarId:string;email:string|null}|null;
 
@@ -32,17 +31,24 @@ export class PostgresHostRepository implements HostDirectory,CredentialStore{
  async getBySlug(slug:string){const r=await this.pool.query<HostRow>(`${SELECT} where h.slug=$1`,[slug]);return r.rows[0]?toContext(r.rows[0]):null}
  async getById(hostId:string){const r=await this.pool.query<HostRow>(`${SELECT} where h.id=$1`,[hostId]);return r.rows[0]?toContext(r.rows[0]):null}
 
- /** Sign-in = connect: finds or creates the host for this Google identity. */
+ /** Sign-in = connect: finds or creates the host for this Google identity. New hosts have no slug until they choose one. */
  async upsertGoogleHost(identity:GoogleIdentity):Promise<{hostId:string;created:boolean}>{
-  const existing=await this.pool.query<{id:string}>("update hosts set email=$2,updated_at=now() where google_sub=$1 returning id",[identity.sub,identity.email]);
-  if(existing.rows[0])return{hostId:existing.rows[0].id,created:false};
-  const base=slugBase(identity.email);
-  for(let attempt=0;attempt<6;attempt++){
-   const slug=attempt===0?base:`${base.slice(0,30)}-${randomToken(3).toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,4)||"x"}`;
-   try{const r=await this.pool.query<{id:string;created:boolean}>("insert into hosts (slug,display_name,email,google_sub) values ($1,$2,$3,$4) on conflict (google_sub) do update set email=excluded.email returning id,(xmax=0) as created",[slug,identity.name??identity.email.split("@")[0],identity.email,identity.sub]);return{hostId:r.rows[0].id,created:r.rows[0].created}}
-   catch(err){if(pgCode(err)!==UNIQUE_VIOLATION)throw err}
-  }
-  throw new Error("Could not allocate a unique slug");
+  const r=await this.pool.query<{id:string;created:boolean}>("insert into hosts (display_name,email,google_sub) values ($1,$2,$3) on conflict (google_sub) do update set email=excluded.email,updated_at=now() returning id,(xmax=0) as created",[identity.name??identity.email.split("@")[0],identity.email,identity.sub]);
+  return{hostId:r.rows[0].id,created:r.rows[0].created};
+ }
+
+ /** First free variant of the name-derived slug ("rajat", "rajat-2", …), for the setup form's default value. */
+ async suggestSlug(displayName:string,email:string):Promise<string>{
+  const base=slugFromName(displayName,email);
+  const taken=new Set((await this.pool.query<{slug:string}>("select slug from hosts where slug = $1 or slug like $2",[base,`${base}-%`])).rows.map(r=>r.slug));
+  for(let n=1;n<100;n++){const s=n===1?base:`${base.slice(0,SLUG_MAX-String(n).length-1)}-${n}`;if(!taken.has(s))return s}
+  return`${base.slice(0,SLUG_MAX-5)}-${Date.now()%10_000}`;
+ }
+
+ /** Sets the slug once. `taken` on a unique conflict; `already_set` if the host already has one (no V0 editing). */
+ async claimSlug(hostId:string,slug:string):Promise<"ok"|"taken"|"already_set">{
+  try{const r=await this.pool.query("update hosts set slug=$2,updated_at=now() where id=$1 and slug is null",[hostId,slug]);return r.rowCount===1?"ok":"already_set"}
+  catch(err){if(pgCode(err)===UNIQUE_VIOLATION)return"taken";throw err}
  }
 
  async saveGoogleConnection(hostId:string,input:{externalAccountId:string;email:string;tokens:GoogleTokens}){

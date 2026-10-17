@@ -25,6 +25,10 @@
 - ASSUMPTION: rescheduling onto a time overlapping the current booking is unsupported in V0 (rejected cleanly).
 - ASSUMPTION: in-memory per-instance rate limits are an acceptable boundary until open launch (M6).
 
-### Change Proposals awaiting human approval
-- **CP-M2-1 — Google is the host identity in V0.** USER_FLOWS says "Sign in → slug → connect calendar". M2 merges sign-in and calendar connection into one Google OAuth step (no separate auth system). Proposed provenance: IMPLEMENTATION-NECESSARY. Impact: a host must have a Google account until M4 adds other providers or a separate sign-in.
-- **CP-M2-2 — Slug is auto-generated, not chosen.** The slug comes from the email local part (with collision suffix and reserved words avoided) and is shown on the dashboard. A slug editor is deferred. Impact: low; one form field to add if wanted.
+### Change Proposal decisions (human, 2026-10-17)
+- **CP-M2-1 — APPROVED → HUMAN.** Google Calendar OAuth is also host authentication for V0. No separate authentication system will be built. Recorded as HUMAN-approved product scope.
+- **CP-M2-2 — REJECTED AS WRITTEN → replaced by HUMAN decision.** The slug is NOT derived permanently from the email local-part. Instead, at first-time setup the dashboard suggests a slug from the Google display name in an editable field ("WhyWhen link  whywhen.ai/[rajat]"); the host chooses the final slug; it is validated (allowed characters, reserved words, uniqueness) and persisted. V0 explicitly excludes later slug editing, slug history and redirects.
+  - IMPLEMENTATION-NECESSARY: migration `0003_host_chosen_slug.sql` makes `hosts.slug` nullable. A new host has no public page until the slug is chosen. Uniqueness stays a DB unique index, so concurrent claims are safe.
+
+## M2.1 — Real Google booking verification (HUMAN)
+- Next milestone is verification only. No new product features before it passes: no Outlook/Microsoft, Zoho, Gmail, MCP expansion, payments, teams, analytics or AI enhancements.

@@ -11,7 +11,8 @@ export type Weekday=1|2|3|4|5|6|7;
 export type WeeklyRule={weekday:Weekday;start:string;end:string};
 export type MeetingDuration=15|30|45|60;
 export type AvailabilityPolicy={timezone:string;weekly:WeeklyRule[];durationMinutes:MeetingDuration;bufferBeforeMinutes:number;bufferAfterMinutes:number;minimumNoticeMinutes:number;horizonDays:number};
-export type Host={id:string;slug:string;displayName:string;email:string;policy:AvailabilityPolicy};
+/** `slug` is null until the host chooses their public link at first setup. */
+export type Host={id:string;slug:string|null;displayName:string;email:string;policy:AvailabilityPolicy};
 export type HostContext={host:Host;calendar:CalendarAccount|null};
 
 /**

@@ -10,9 +10,14 @@ Outcome: minimalist public page, direct booking page, dashboard shell, mock inte
 Exit: install succeeds; typecheck/tests/build observed passing.
 
 ## M2 — Google Calendar real booking
-**Status:** IMPLEMENTED NOT VERIFIED. Code complete, unit-tested with fakes, race/constraint tests VERIFIED on local Postgres 16. Exit (real Google test account E2E) pending the human UAT in `docs/M2_SETUP_AND_UAT.md`.  
+**Status:** IMPLEMENTED NOT VERIFIED; human-approved for M2.1 verification (CP-M2-1 approved, CP-M2-2 replaced by host-chosen slug). Code complete, unit-tested with fakes, race/constraint tests VERIFIED on local Postgres 16. Exit (real Google test account E2E) pending the human UAT in `docs/M2_SETUP_AND_UAT.md`.  
 Outcome: OAuth + live free/busy + hold + re-check + event creation + cancellation/reschedule + idempotency.  
 Exit: real Google test account E2E observed.
+
+## M2.1 — Real Google booking verification
+**Status:** NOT STARTED (waiting on human-configured credentials).
+Outcome: an unauthenticated visitor opens the host's public WhyWhen URL, sees availability calculated from the host's real Google Calendar, books a slot, and a real Google Calendar event/invitation is created.
+Procedure: `docs/M2_SETUP_AND_UAT.md`. Scope: verification and fixes it surfaces only; no new features.
 
 ## M3 — AI routing + model switching
 **Status:** PARTIAL  

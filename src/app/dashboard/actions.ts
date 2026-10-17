@@ -4,6 +4,7 @@ import {redirect} from "next/navigation";
 import {z} from "zod";
 import {validatePolicy} from "@/core/availability/policy";
 import type {AvailabilityPolicy,MeetingDuration,WeeklyRule,Weekday} from "@/core/domain/types";
+import {normalizeSlugInput,slugProblem} from "@/core/hosts/slug";
 import {getServices} from "@/server/container";
 import {sessionHostId} from "@/server/http";
 import {timezoneSchema,uuidSchema} from "@/server/validation";
@@ -11,6 +12,17 @@ import {timezoneSchema,uuidSchema} from "@/server/validation";
 // Every action derives the host from the signed session cookie; client-supplied ids are only ever matched against it.
 async function requireHost(){const {env}=getServices();const hostId=await sessionHostId(env.SESSION_SECRET);if(!hostId)redirect("/dashboard");return hostId}
 const done=(query:string):never=>{revalidatePath("/dashboard");redirect(`/dashboard?${query}`)};
+
+/** First-time setup: the host picks their public link once (no later editing in V0). */
+export async function chooseSlug(form:FormData){
+ const hostId=await requireHost();
+ const slug=normalizeSlugInput(String(form.get("slug")??"").slice(0,100));
+ const retry=(error:string)=>done(`slugError=${error}&slug=${encodeURIComponent(slug)}`);
+ if(slugProblem(slug))return retry("invalid");
+ const r=await getServices().hosts.claimSlug(hostId,slug);
+ if(r==="taken")return retry("taken");
+ return done(r==="ok"?"linked=1":"");
+}
 
 const minutes=(max:number)=>z.coerce.number().int().min(0).max(max);
 const settingsSchema=z.object({
