@@ -21,6 +21,9 @@ The app can now, in code, do the full Google Calendar booking loop. You sign in 
   1. **Approved:** connecting Google Calendar is also how hosts sign in. No separate login system.
   2. **Changed as you asked:** after connecting Google, the first screen is "Choose your link". It shows **WhyWhen link  whywhen.ai/[rajat]** pre-filled from your Google name. You can edit it, and it is checked for allowed characters, reserved words (like `dashboard`) and whether someone else already has it. It is saved once. Changing it later isn't part of V0.
 
+## New look (2026-10-18)
+The whole app was redesigned: your name and initials lead every public page, headlines use an elegant serif, booking uses a real month calendar, the dashboard is grouped into clear sections, and there's a dark mode. Same features underneath; nothing new was added before the first real booking test.
+
 ## Known limits (for now)
 - Moving a meeting to a time that overlaps its current time isn't supported. Pick a non-overlapping time.
 - Abuse limits are per server instance and need upgrading before a public launch.

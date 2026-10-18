@@ -47,8 +47,8 @@ Deliberately **not** pursued (segment mismatch): teams, round-robin, CRM, paymen
 | Axis | Metric | Target | Current baseline | Evidence state |
 |---|---|---|---|---|
 | Visitor speed | Taps from public page to "You're booked" | ≤ 5 | 5 (Book → time → name/email → confirm; first date preselected) | VERIFIED (local, Playwright) |
-| Page weight | Transferred bytes, `/{slug}/book` first load | < 100 KB | 148 KB (`/{slug}`: 145 KB) | VERIFIED (local build, 2026-10-17) |
-| Page speed | LCP, emulated 1.6 Mbps/150 ms | < 1.0 s on real 4G | 352 ms (`/book`), 432 ms (`/{slug}`) on a local server | VERIFIED (local only; not real network) |
+| Page weight | Transferred bytes, `/{slug}/book` first load | < 100 KB | 186 KB (`/{slug}`: 195 KB) after the 2026-10-18 redesign (+~45 KB serif fonts); was 148 KB | VERIFIED (local build, 2026-10-18) |
+| Page speed | LCP, emulated 1.6 Mbps/150 ms | < 1.0 s on real 4G | 404 ms (`/book`), 424 ms (`/{slug}`) on a local server | VERIFIED (local only; not real network) |
 | Availability latency | p95 of availability API | < 500 ms | not measured | IMPLEMENTED NOT VERIFIED (needs live Google) |
 | Correctness | Double bookings under concurrency | 0 | 0 in 20-way and 10-visitor races, 80+ runs | VERIFIED (local Postgres) |
 | Honesty | Bookings shown "booked" without provider confirmation | 0 | 0 by design + tests | VERIFIED (local) |

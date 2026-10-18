@@ -17,7 +17,8 @@ export type BookingServiceDeps={
  log?:(event:string,fields:Record<string,unknown>)=>void;
 };
 
-const MAX_RANGE_MS=31*86_400_000;
+// One month view plus timezone margin per request.
+const MAX_RANGE_MS=45*86_400_000;
 const fail=(code:FailureCode,message:string,retryable=false):Failure=>({ok:false,code,message,retryable});
 const MESSAGES={
  slot:"That time is no longer available. Please choose another.",

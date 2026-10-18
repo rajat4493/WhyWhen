@@ -35,3 +35,13 @@
 
 ## Strategy (proposed, not approved)
 - **CP-STRAT-1 — awaiting human approval.** `docs/PRODUCT_STRATEGY.md`: compete on segment-specific axes (intent-first, honest reliability, page speed, calm looks, free core for solos) instead of feature parity with Calendly/Cal.com. Published scoreboard with evidence states. Proposed new milestone **M2.2** (after M2.1): conflict check across all host calendars, auto Google Meet link, public page < 100 KB. No scope or code change until approved; M2.1 remains the gate.
+
+## Visual redesign (HUMAN request, 2026-10-18)
+- HUMAN: "it looks ugly; design it as if it were your product." Visual and UX-pattern redesign only. **No new product capability** (M2.1 gate respected): same flows, endpoints and data.
+- Public page: host monogram + name, serif headline with italic accent, single composer card, "Book a time directly" as a quieter secondary row.
+- Booking: month calendar grid with open days tinted + time list (side-by-side on desktop), timezone line, summary card, success mark. Manage page uses the same shell.
+- Dashboard: sections (Your link with Copy, Upcoming, Meeting/Weekly hours/Rules, Google Calendar), segmented meeting length, 24 h half-hour time selects.
+- Landing page: "Ask *why* before *when*." with a product preview.
+- Dark mode via `prefers-color-scheme`. Self-hosted Instrument Serif (`@fontsource/instrument-serif@5.3.0`, pinned).
+- IMPLEMENTATION-NECESSARY: availability request cap 31 → 45 days (one month view plus timezone margin per request).
+- EVIDENCE-DISCOVERED: native `<input type=time>` cut AM/PM on narrow phones (17:00 displayed as "05:00") → replaced with 24 h selects.

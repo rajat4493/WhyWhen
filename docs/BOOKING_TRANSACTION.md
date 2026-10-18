@@ -14,7 +14,7 @@ Code: `src/core/booking/service.ts` (orchestration, provider-neutral) · `src/co
 
 | # | Step | Where | Failure handling |
 |---|---|---|---|
-| 1 | Visitor requests available slots for a date range (≤31 days). | `GET /api/public/{slug}/availability` → `listSlots` | Unknown slug → 404. Range invalid → 400. |
+| 1 | Visitor requests available slots for a date range (≤45 days: one month view plus timezone margin). | `GET /api/public/{slug}/availability` → `listSlots` | Unknown slug → 404. Range invalid → 400. |
 | 2 | Read connected-calendar busy periods (live Google free/busy, range widened by buffers) **plus** occupied DB rows (unexpired holds, pending/confirmed bookings). | `GoogleCalendarAdapter.getBusy`, `store.occupiedIntervals` | Google unavailable/auth error → **fail closed**: `503 calendar_unavailable`. No slots are guessed. |
 | 3 | Apply weekly hours (host IANA timezone, DST-safe), duration, buffers, minimum notice, horizon. | `generateSlots` (pure) | — |
 | 4 | Visitor selects a slot. | Browser | — |
