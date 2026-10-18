@@ -20,6 +20,7 @@ Outcome: an unauthenticated visitor opens the host's public WhyWhen URL, sees av
 Procedure: `docs/M2_SETUP_AND_UAT.md`. Scope: verification and fixes it surfaces only; no new features.
 
 ## M3 — AI routing + model switching
+Human-approved input: host "What I help with" field (2026-10-18).
 **Status:** PARTIAL  
 Outcome: mock + AI Gateway + OpenAI-compatible modes, host model config, schema validation, graceful degradation.  
 Exit: at least two configured models exercised on same fixtures; booking succeeds with AI disabled.

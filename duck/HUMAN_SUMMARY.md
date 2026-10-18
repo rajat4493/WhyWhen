@@ -24,6 +24,9 @@ The app can now, in code, do the full Google Calendar booking loop. You sign in 
 ## New look (2026-10-18)
 The whole app was redesigned: your name and initials lead every public page, headlines use an elegant serif, booking uses a real month calendar, the dashboard is grouped into clear sections, and there's a dark mode. Same features underneath; nothing new was added before the first real booking test.
 
+## Fixed: "What do you need?"
+Pressing Continue used to show visitors a page of raw code. Now it takes them straight to booking with their request shown at the top and filled into the booking, so it appears in your Google Calendar event. Real AI answers come in M3; your "What I help with" note (approved) will power them.
+
 ## Known limits (for now)
 - Moving a meeting to a time that overlaps its current time isn't supported. Pick a non-overlapping time.
 - Abuse limits are per server instance and need upgrading before a public launch.

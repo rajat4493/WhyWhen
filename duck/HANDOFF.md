@@ -19,6 +19,7 @@ Read `docs/PRODUCT_INTENT_LOCKED_V1.md`. Booking transaction: `docs/BOOKING_TRAN
 - Booking service (provider-neutral) implementing the 10-step sequence with holds, live re-check, atomic conversion, deterministic Google event IDs, `needs_reconciliation` compensation, cancel, reschedule.
 - Postgres store via `pg` + migration `0002` (single lifecycle table, exclusion constraint, RLS on).
 - Rate limits, input validation, redacted logging, CI with a Postgres service.
+- "What do you need?" composer (`components/composer.tsx`) hands the request to booking via sessionStorage → notes → event description. `/api/intent` is unlinked until M3. M3 has an approved host "What I help with" field.
 
 ## Verified locally (see ledger for exact evidence)
 `npm ci && npm run verify` (98 tests + build) · `npm run test:db` (11 real-Postgres tests incl. 20-way race and concurrent slug claims) · live HTTP smoke · Playwright UI flows at phone width.

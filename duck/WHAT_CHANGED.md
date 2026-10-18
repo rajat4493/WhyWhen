@@ -45,3 +45,7 @@
 - Dark mode via `prefers-color-scheme`. Self-hosted Instrument Serif (`@fontsource/instrument-serif@5.3.0`, pinned).
 - IMPLEMENTATION-NECESSARY: availability request cap 31 → 45 days (one month view plus timezone margin per request).
 - EVIDENCE-DISCOVERED: native `<input type=time>` cut AM/PM on narrow phones (17:00 displayed as "05:00") → replaced with 24 h selects.
+
+## "What do you need?" bug fix + M3 field approval (2026-10-18)
+- EVIDENCE-DISCOVERED → fixed: **Continue** on the public page posted to `/api/intent` and showed the visitor raw JSON. Now Continue carries the typed request into direct booking: it is shown as "Your request" above the calendar, pre-fills the booking's "What it's about" field, and is sent with the booking, so it lands in the Google event description. The text travels via the browser's sessionStorage (not the URL) and is cleared after booking. No AI involved; `/api/intent` stays for M3 but is no longer linked from the page.
+- HUMAN: **"What I help with" host field APPROVED for M3.** A short host-written note (+ optional FAQ/links) that the AI uses to answer, clarify or route instead of guessing. Built in M3, after M2.1 passes (gate unchanged).

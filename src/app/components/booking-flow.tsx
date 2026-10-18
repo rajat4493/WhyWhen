@@ -1,5 +1,6 @@
 "use client";
 import {useCallback,useEffect,useMemo,useRef,useState} from "react";
+import {NEED_MAX,needKey} from "./composer";
 import {IconArrowLeft,IconCalendar,IconCheck,IconChevronLeft,IconChevronRight,IconClock,IconGlobe} from "./icons";
 
 type Slot={start:string;end:string};
@@ -37,9 +38,11 @@ export function BookingFlow({slug,hostName,durationMinutes,horizonDays=60,mode={
  const [message,setMessage]=useState<{tone:"warn"|"error";text:string}|null>(null);
  const [busy,setBusy]=useState(false);
  const [form,setForm]=useState({name:"",email:"",notes:""});
+ const [need,setNeed]=useState("");
  const key=useRef("");
  const autoAdvanced=useRef(false);
 
+ useEffect(()=>{if(mode.kind!=="book")return;try{const n=(sessionStorage.getItem(needKey(slug))??"").slice(0,NEED_MAX);if(n){setNeed(n);setForm(f=>({...f,notes:f.notes||n}))}}catch{/* storage blocked */}},[]);// eslint-disable-line react-hooks/exhaustive-deps
  useEffect(()=>{const z=visitorTz();setTz(z);setWeekStart(firstDayOfWeek());const [y,m]=dayKey(Date.now(),z).split("-").map(Number);setMonth({y,m})},[]);
 
  const mKey=month?`${month.y}-${month.m}`:"";
@@ -103,6 +106,7 @@ export function BookingFlow({slug,hostName,durationMinutes,horizonDays=60,mode={
   if((r.status===200||r.status===201)&&booking){
    setBusy(false);
    if(mode.kind==="reschedule"){onRescheduled?.({start:booking.start,end:booking.end});return}
+   try{sessionStorage.removeItem(needKey(slug))}catch{/* storage blocked */}
    setStep({name:"done",result:{start:booking.start,end:booking.end,email:booking.visitorEmail,manageUrl:String(r.data.manageUrl??"")}});return;
   }
   if(r.status===202){setBusy(false);setStep({name:"pending",holdId,slot});return}
@@ -147,7 +151,7 @@ export function BookingFlow({slug,hostName,durationMinutes,horizonDays=60,mode={
     {isBook&&<>
      <label className="label">Name<input className="field" required maxLength={120} autoComplete="name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
      <label className="label">Email<input className="field" required type="email" maxLength={254} autoComplete="email" inputMode="email" value={form.email} onChange={e=>setForm({...form,email:e.target.value})}/></label>
-     <label className="label"><span>Anything to share beforehand? <span className="hint">Optional</span></span><textarea className="field" maxLength={1000} rows={3} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></label>
+     <label className="label"><span>{need?"What it's about":<>Anything to share beforehand? <span className="hint">Optional</span></>}</span><textarea className="field" maxLength={1000} rows={3} value={form.notes} onChange={e=>setForm({...form,notes:e.target.value})}/></label>
     </>}
     <button type="submit" className="button accent block" disabled={busy}>{busy?"Confirming…":isBook?"Confirm booking":"Confirm new time"}</button>
     <p className="tiny" style={{margin:0,textAlign:"center"}}>This time is held for you for a few minutes.</p>
@@ -164,6 +168,7 @@ export function BookingFlow({slug,hostName,durationMinutes,horizonDays=60,mode={
  const times=day?byDay.get(day)??[]:[];
  return <section>
   <Note/>
+  {need&&<p className="need-quote"><span className="tiny">Your request</span>{need.length>160?`${need.slice(0,160)}…`:need}</p>}
   <div className="picker">
    <div>
     <div className="cal-head">
